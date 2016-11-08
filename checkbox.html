@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+</head>
+<body>
+    <input type="checkbox" name="vehicle" value="Bike"> I have a bike<br>
+    <input type="checkbox" name="vehicle" value="Car" checked="checked"> I have a car<br>
+    <button>提交</button>
+
+<script>
+   $(function(){
+       var checkboxs = $("input[type='checkbox']");
+      $("button").click(function(){
+          var checked = $("input[type='checkbox']:checked");
+          console.log("选中了" + checked.length + "个");
+          console.log(checked);
+      });
+
+     console.log($("button").constructor());
+     console.log($("button").selector);
+
+       console.log($.type(null))
+   })
+
+</script>
+</body>
+</html>
