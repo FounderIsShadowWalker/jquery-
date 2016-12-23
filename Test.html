@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="me_sizzle.js"></script>
+</head>
+<body>
+<div id="container">
+ <p id="text1">1</p>
+ <p id="text2">2</p>
+ <p id="text3">3</p>
+</div>
+<script>
+
+      var context = document.getElementById("text1");
+      console.log(Sizzle("body div#container p#text2"));
+</script>
+</body>
+</html>

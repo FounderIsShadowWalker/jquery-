@@ -1,50 +1,74 @@
-define([
-	"./core",
-	"./core/access",
-	"./css"
-], function( jQuery, access ) {
+(function( jQuery ) {
 
-// Create innerHeight, innerWidth, height, width, outerHeight and outerWidth methods
-jQuery.each( { Height: "height", Width: "width" }, function( name, type ) {
-	jQuery.each( { padding: "inner" + name, content: type, "": "outer" + name }, function( defaultExtra, funcName ) {
-		// margin is only for outerHeight, outerWidth
-		jQuery.fn[ funcName ] = function( margin, value ) {
-			var chainable = arguments.length && ( defaultExtra || typeof margin !== "boolean" ),
-				extra = defaultExtra || ( margin === true || value === true ? "margin" : "border" );
+// Create width, height, innerHeight, innerWidth, outerHeight and outerWidth methods
+jQuery.each([ "Height", "Width" ], function( i, name ) {
 
-			return access( this, function( elem, type, value ) {
-				var doc;
+	var type = name.toLowerCase();
 
-				if ( jQuery.isWindow( elem ) ) {
-					// As of 5/8/2012 this will yield incorrect results for Mobile Safari, but there
-					// isn't a whole lot we can do. See pull request at this URL for discussion:
-					// https://github.com/jquery/jquery/pull/764
-					return elem.document.documentElement[ "client" + name ];
-				}
+	// innerHeight and innerWidth
+	jQuery.fn[ "inner" + name ] = function() {
+		var elem = this[0];
+		return elem ?
+			elem.style ?
+			parseFloat( jQuery.css( elem, type, "padding" ) ) :
+			this[ type ]() :
+			null;
+	};
 
-				// Get document width or height
-				if ( elem.nodeType === 9 ) {
-					doc = elem.documentElement;
+	// outerHeight and outerWidth
+	jQuery.fn[ "outer" + name ] = function( margin ) {
+		var elem = this[0];
+		return elem ?
+			elem.style ?
+			parseFloat( jQuery.css( elem, type, margin ? "margin" : "border" ) ) :
+			this[ type ]() :
+			null;
+	};
 
-					// Either scroll[Width/Height] or offset[Width/Height] or client[Width/Height], whichever is greatest
-					// unfortunately, this causes bug #3838 in IE6/8 only, but there is currently no good, small way to fix it.
-					return Math.max(
-						elem.body[ "scroll" + name ], doc[ "scroll" + name ],
-						elem.body[ "offset" + name ], doc[ "offset" + name ],
-						doc[ "client" + name ]
-					);
-				}
+	jQuery.fn[ type ] = function( size ) {
+		// Get window width or height
+		var elem = this[0];
+		if ( !elem ) {
+			return size == null ? null : this;
+		}
 
-				return value === undefined ?
-					// Get width or height on the element, requesting but not forcing parseFloat
-					jQuery.css( elem, type, extra ) :
+		if ( jQuery.isFunction( size ) ) {
+			return this.each(function( i ) {
+				var self = jQuery( this );
+				self[ type ]( size.call( this, i, self[ type ]() ) );
+			});
+		}
 
-					// Set width or height on the element
-					jQuery.style( elem, type, value, extra );
-			}, type, chainable ? margin : undefined, chainable, null );
-		};
-	});
+		if ( jQuery.isWindow( elem ) ) {
+			// Everyone else use document.documentElement or document.body depending on Quirks vs Standards mode
+			// 3rd condition allows Nokia support, as it supports the docElem prop but not CSS1Compat
+			var docElemProp = elem.document.documentElement[ "client" + name ],
+				body = elem.document.body;
+			return elem.document.compatMode === "CSS1Compat" && docElemProp ||
+				body && body[ "client" + name ] || docElemProp;
+
+		// Get document width or height
+		} else if ( elem.nodeType === 9 ) {
+			// Either scroll[Width/Height] or offset[Width/Height], whichever is greater
+			return Math.max(
+				elem.documentElement["client" + name],
+				elem.body["scroll" + name], elem.documentElement["scroll" + name],
+				elem.body["offset" + name], elem.documentElement["offset" + name]
+			);
+
+		// Get or set width or height on the element
+		} else if ( size === undefined ) {
+			var orig = jQuery.css( elem, type ),
+				ret = parseFloat( orig );
+
+			return jQuery.isNumeric( ret ) ? ret : orig;
+
+		// Set the width or height on the element (default to pixels if value is unitless)
+		} else {
+			return this.css( type, typeof size === "string" ? size : size + "px" );
+		}
+	};
+
 });
 
-return jQuery;
-});
+})( jQuery );
