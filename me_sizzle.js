@@ -118,6 +118,30 @@
         return results;
     }
 
+
+    Sizzle.uniqueSort = function( results ) {
+        if ( sortOrder ) {
+
+            results.sort( sortOrder );
+
+            for ( var i = 1; i < results.length; i++ ) {
+                    if ( results[i] === results[ i - 1 ] ) {
+                        results.splice( i--, 1 );
+                    }
+            }
+        }
+
+        return results;
+    };
+
+    Sizzle.matches = function( expr, set ) {
+        return Sizzle( expr, null, null, set );
+    };
+
+    Sizzle.matchesSelector = function( node, expr ) {
+        return Sizzle( expr, null, null, [node] ).length > 0;
+    };
+
     Sizzle.find = function(expr, context){
         var set, i, len, match, type, left;
 
@@ -781,6 +805,18 @@
         Expr.match[ type ] = new RegExp( Expr.match[ type ].source + (/(?![^\[]*\])(?![^\(]*\))/.source) );
         Expr.leftMatch[ type ] = new RegExp( /(^(?:.|\r|\n)*?)/.source + Expr.match[ type ].source.replace(/\\(\d+)/g, fescape) );
     }
+
+    var sortOrder = function( a, b ) {
+        if ( a === b ) {
+            return 0;
+        }
+
+        if ( !a.compareDocumentPosition || !b.compareDocumentPosition ) {
+            return a.compareDocumentPosition ? -1 : 1;
+        }
+
+        return a.compareDocumentPosition(b) & 4 ? -1 : 1;
+    };
 
     function dirNodeCheck( dir, cur, doneName, checkSet, nodeCheck, isXML ) {
         for ( var i = 0, l = checkSet.length; i < l; i++ ) {
